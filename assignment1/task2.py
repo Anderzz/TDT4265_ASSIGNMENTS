@@ -18,8 +18,8 @@ def calculate_accuracy(X: np.ndarray, targets: np.ndarray, model: BinaryModel) -
     # TODO Implement this function (Task 2c)
     accuracy = 0.0
     total = X.shape[0]
-    a = model.forward(X)
-    positives = a >= 0.5
+    res = model.forward(X)
+    positives = res >= 0.5
     num_correct = (targets.squeeze() == positives.squeeze()).sum()
     accuracy = num_correct / total
     return accuracy
@@ -72,7 +72,7 @@ class LogisticTrainer(BaseTrainer):
 
 def main():
     # hyperparameters DO NOT CHANGE IF NOT SPECIFIED IN ASSIGNMENT TEXT
-    num_epochs = 50
+    num_epochs = 500
     learning_rate = 0.05
     batch_size = 128
     shuffle_dataset = False
@@ -106,25 +106,25 @@ def main():
     print("Validation accuracy:", calculate_accuracy(X_val, Y_val, model))
 
     # Plot loss for first model (task 2b)
-    # plt.ylim([0., .2])
-    # utils.plot_loss(train_history["loss"],
-    #                 "Training Loss", npoints_to_average=10)
-    # utils.plot_loss(val_history["loss"], "Validation Loss")
-    # plt.legend()
-    # plt.xlabel("Number of Training Steps")
-    # plt.ylabel("Cross Entropy Loss - Average")
-    # plt.savefig("task2b_binary_train_loss.png")
-    # plt.show()
+    plt.ylim([0., .2])
+    utils.plot_loss(train_history["loss"],
+                    "Training Loss", npoints_to_average=10)
+    utils.plot_loss(val_history["loss"], "Validation Loss")
+    plt.legend()
+    plt.xlabel("Number of Training Steps")
+    plt.ylabel("Cross Entropy Loss - Average")
+    plt.savefig("task2b_binary_train_loss.png")
+    plt.show()
 
-    # # Plot accuracy
-    # plt.ylim([0.93, .99])
-    # utils.plot_loss(train_history["accuracy"], "Training Accuracy")
-    # utils.plot_loss(val_history["accuracy"], "Validation Accuracy")
-    # plt.xlabel("Number of Training Steps")
-    # plt.ylabel("Accuracy")
-    # plt.legend()
-    # plt.savefig("task2b_binary_train_accuracy.png")
-    # plt.show()
+    # Plot accuracy
+    plt.ylim([0.93, .99])
+    utils.plot_loss(train_history["accuracy"], "Training Accuracy")
+    utils.plot_loss(val_history["accuracy"], "Validation Accuracy")
+    plt.xlabel("Number of Training Steps")
+    plt.ylabel("Accuracy")
+    plt.legend()
+    plt.savefig("task2b_binary_train_accuracy.png")
+    plt.show()
 
     # Task 2e - Create a comparison between training with and without shuffling
     shuffle_dataset = True
@@ -137,26 +137,26 @@ def main():
     )
     train_history_shuffle, val_history_shuffle = trainer.train(num_epochs)
 
-    # plt.ylim([0., .2])
-    # utils.plot_loss(train_history["loss"],
-    #                 "Training Loss", npoints_to_average=10)
-    # utils.plot_loss(
-    #     train_history_shuffle["loss"], "Training Loss with shuffle", npoints_to_average=10)
-    # plt.legend()
-    # plt.xlabel("Number of Training Steps")
-    # plt.ylabel("Cross Entropy Loss - Average")
-    # plt.savefig("task2e_train_loss_with_shuffle.png")
-    # plt.show()
+    plt.ylim([0., .2])
+    utils.plot_loss(train_history["loss"],
+                    "Training Loss", npoints_to_average=10)
+    utils.plot_loss(
+        train_history_shuffle["loss"], "Training Loss with shuffle", npoints_to_average=10)
+    plt.legend()
+    plt.xlabel("Number of Training Steps")
+    plt.ylabel("Cross Entropy Loss - Average")
+    plt.savefig("task2e_train_loss_with_shuffle.png")
+    plt.show()
 
-    # plt.ylim([0.93, .99])
-    # utils.plot_loss(val_history["accuracy"], "Validation Accuracy")
-    # utils.plot_loss(
-    #     val_history_shuffle["accuracy"], "Validation Accuracy with shuffle")
-    # plt.xlabel("Number of Training Steps")
-    # plt.ylabel("Accuracy")
-    # plt.legend()
-    # plt.savefig("task2e_train_accuracy_shuffle_difference.png")
-    # plt.show()
+    plt.ylim([0.93, .99])
+    utils.plot_loss(val_history["accuracy"], "Validation Accuracy")
+    utils.plot_loss(
+        val_history_shuffle["accuracy"], "Validation Accuracy with shuffle")
+    plt.xlabel("Number of Training Steps")
+    plt.ylabel("Accuracy")
+    plt.legend()
+    plt.savefig("task2e_train_accuracy_shuffle_difference.png")
+    plt.show()
 
 
 if __name__ == "__main__":

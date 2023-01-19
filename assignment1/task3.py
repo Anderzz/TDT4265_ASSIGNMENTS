@@ -18,6 +18,12 @@ def calculate_accuracy(X: np.ndarray, targets: np.ndarray, model: SoftmaxModel) 
     """
     # TODO: Implement this function (task 3c)
     accuracy = 0
+    total = X.shape[0]
+    res = model.forward(X)
+    res = np.argmax(res, axis=1)
+    targets = np.argmax(targets, axis=1)
+    num_correct = (targets.squeeze() == res.squeeze()).sum()
+    accuracy = num_correct / total
     return accuracy
 
 
@@ -37,6 +43,11 @@ class SoftmaxTrainer(BaseTrainer):
         """
         # TODO: Implement this function (task 3b)
         loss = 0
+        a = self.model.forward(X_batch)
+        self.model.backward(X_batch, a, Y_batch)
+        self.model.w = self.model.w - self.model.grad * self.learning_rate # gradient descent
+        self.model.zero_grad() # reset gradient
+        loss = cross_entropy_loss(Y_batch, a)
         return loss
 
     def validation_step(self):

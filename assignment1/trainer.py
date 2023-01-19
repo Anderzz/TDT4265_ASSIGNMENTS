@@ -71,7 +71,9 @@ class BaseTrainer:
             loss={},
             accuracy={}
         )
-
+        best_val_loss = float('inf')
+        early_stopping_counter = 0
+        max_early_stopping = 10
         global_step = 0
         for epoch in range(num_epochs):
             train_loader = utils.batch_loader(
@@ -90,10 +92,16 @@ class BaseTrainer:
 
                     # TODO (Task 2d): Implement early stopping here.
                     # You can access the validation loss in val_history["loss"]
-                    val_loss = np.array(list(val_history["loss"].values())[-10:])
-                    if len(val_loss) >= 10 and val_loss.min() < val_loss[-1]:
-                        print(f"Early stopping at epochss: {epoch}")
+
+                    val_loss = list(val_history["loss"].values())[-1:][0] # get the last loss value
+                    if val_loss < best_val_loss:                          # best_val_loss is initialized to inf
+                        best_val_loss = val_loss
+                        early_stopping_counter = 0
+                    else:
+                        early_stopping_counter += 1
+                    
+                    if early_stopping_counter >= max_early_stopping:      # if the loss is not decreasing for 10 checks
+                        print(f"Early stopping at epoch: {epoch}")
                         return train_history, val_history
-                    #print(val_loss)
                 global_step += 1
         return train_history, val_history

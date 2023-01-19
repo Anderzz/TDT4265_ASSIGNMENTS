@@ -15,17 +15,20 @@ def cross_entropy_loss(targets: np.ndarray, outputs: np.ndarray):
     # TODO implement this function (Task 3a)
     assert targets.shape == outputs.shape,\
         f"Targets shape: {targets.shape}, outputs: {outputs.shape}"
-    raise NotImplementedError
+    N = targets.shape[0]
+    C_n = targets * np.log(outputs)
+    loss = -1/N * np.sum(C_n)
+    return loss
 
 
 class SoftmaxModel:
 
     def __init__(self, l2_reg_lambda: float):
         # Define number of input nodes
-        self.I = None
+        self.I = 785
 
         # Define number of output nodes
-        self.num_outputs = None
+        self.num_outputs = 10
         self.w = np.zeros((self.I, self.num_outputs))
         self.grad = None
 
@@ -38,8 +41,9 @@ class SoftmaxModel:
         Returns:
             y: output of model with shape [batch size, num_outputs]
         """
-        # TODO implement this function (Task 3a)
-        return None
+        z = np.einsum('ij,jk->ik', X, self.w)
+        a = np.exp(z)/np.sum(np.exp(z), axis=1, keepdims=True)
+        return a
 
     def backward(self, X: np.ndarray, outputs: np.ndarray, targets: np.ndarray) -> None:
         """
@@ -59,6 +63,9 @@ class SoftmaxModel:
         assert self.grad.shape == self.w.shape,\
             f"Grad shape: {self.grad.shape}, w: {self.w.shape}"
 
+        batch_size = X.shape[0]
+        self.grad = -np.einsum('ij,ik->jk', X, targets - outputs) / batch_size
+
     def zero_grad(self) -> None:
         self.grad = None
 
@@ -72,7 +79,7 @@ def one_hot_encode(Y: np.ndarray, num_classes: int):
         Y: shape [Num examples, num classes]
     """
     # TODO implement this function (Task 3a)
-    raise NotImplementedError
+    return np.eye(num_classes)[Y][:, 0, :]
 
 
 def gradient_approximation_test(model: SoftmaxModel, X: np.ndarray, Y: np.ndarray):
@@ -111,6 +118,7 @@ def main():
     # Simple test on one-hot encoding
     Y = np.zeros((1, 1), dtype=int)
     Y[0, 0] = 3
+    print(Y[0, 0])
     Y = one_hot_encode(Y, 10)
     assert Y[0, 3] == 1 and Y.sum() == 1, \
         f"Expected the vector to be [0,0,0,1,0,0,0,0,0,0], but got {Y}"
