@@ -135,7 +135,7 @@ def main():
     )
     train_history_reg01, val_history_reg01 = trainer.train(num_epochs)
     # You can finish the rest of task 4 below this point.
-
+    
     # Plotting of softmax weights (Task 4b)
     # plt.imsave("task4b_softmax_weight.png", weight, cmap="gray")
 
