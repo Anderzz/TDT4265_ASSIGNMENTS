@@ -64,11 +64,15 @@ class SoftmaxModel:
             f"Grad shape: {self.grad.shape}, w: {self.w.shape}"
 
         batch_size = X.shape[0]
-        self.grad = -np.einsum('ij,ik->jk', X, targets - outputs) + self.l2_reg_lambda * self.w
-        self.grad = self.grad / batch_size
+        self.grad = np.einsum('ij,ik->jk', -X, targets - outputs) / batch_size 
+        self.grad = self.grad + self.l2_reg_lambda * self.w
+        
 
     def zero_grad(self) -> None:
         self.grad = None
+
+    def get_weights(self) -> np.ndarray:
+        return self.w
 
 
 def one_hot_encode(Y: np.ndarray, num_classes: int):
