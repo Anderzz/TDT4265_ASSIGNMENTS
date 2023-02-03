@@ -16,8 +16,13 @@ def calculate_accuracy(X: np.ndarray, targets: np.ndarray, model: SoftmaxModel) 
         Accuracy (float)
     """
     # TODO: Implement this function (copy from last assignment)
-    accuracy = 0
-    return accuracy
+    accuracy = 0.0
+    total = X.shape[0]
+    res = model.forward(X)
+    positives = res >= 0.5
+    num_correct = (targets.squeeze() == positives.squeeze()).sum()
+    accuracy = num_correct / total
+    return accuracy/10
 
 
 class SoftmaxTrainer(BaseTrainer):
@@ -49,9 +54,13 @@ class SoftmaxTrainer(BaseTrainer):
         # TODO: Implement this function (task 2c)
 
         loss = 0
-
-        loss = cross_entropy_loss(Y_batch, logits)  # sol
-
+        logits = self.model.forward(X_batch)
+        self.model.zero_grad()
+        self.model.backward(X_batch, logits, Y_batch)
+        for i, w in enumerate(self.model.ws):
+            self.model.ws[i] = w - self.learning_rate * self.model.grads[i]
+        self.model.zero_grad()
+        loss = cross_entropy_loss(Y_batch, logits)
         return loss
 
     def validation_step(self):
@@ -131,7 +140,7 @@ def main():
     plt.ylabel("Cross Entropy Loss - Average")
     # Plot accuracy
     plt.subplot(1, 2, 2)
-    plt.ylim([0.8, .99])
+    plt.ylim([0.8, 1.0])
     utils.plot_loss(train_history["accuracy"], "Training Accuracy")
     utils.plot_loss(val_history["accuracy"], "Validation Accuracy")
     plt.xlabel("Number of Training Steps")

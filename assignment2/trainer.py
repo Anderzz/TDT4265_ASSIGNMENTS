@@ -71,7 +71,10 @@ class BaseTrainer:
             loss={},
             accuracy={}
         )
-
+        best_val_loss = np.inf
+        best_weights = None
+        counter = 0
+        patience = 50
         global_step = 0
         for epoch in range(num_epochs):
             train_loader = utils.batch_loader(
@@ -88,5 +91,17 @@ class BaseTrainer:
                     val_history["loss"][global_step] = val_loss
                     val_history["accuracy"][global_step] = accuracy_val
                     # TODO: Implement early stopping (copy from last assignment)
+
+                    val_loss = list(val_history["loss"].values())[-1:][0] # get the last loss value
+                    if val_loss < best_val_loss:                          # best_val_loss is initialized to inf
+                        best_val_loss = val_loss
+                        best_weights = self.model.get_weights()           # save the weights
+                        counter = 0
+                    else:
+                        counter += 1
+                        if counter >= patience:                           # if the loss is not decreasing for 50 checks
+                            print(f"Early stopping at epoch: {epoch}")
+                            self.model.set_weights(best_weights)          # set the weights to the best weights
+                            return train_history, val_history
                 global_step += 1
         return train_history, val_history
