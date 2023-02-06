@@ -58,7 +58,11 @@ class SoftmaxTrainer(BaseTrainer):
         self.model.zero_grad()
         self.model.backward(X_batch, logits, Y_batch)
         for i, w in enumerate(self.model.ws):
-            self.model.ws[i] = w - self.learning_rate * self.model.grads[i]
+            if self.use_momentum:
+                self.previous_grads[i] = self.momentum_gamma * self.previous_grads[i] - self.learning_rate * self.model.grads[i]
+                self.model.ws[i] = w + self.previous_grads[i]
+            else:
+                self.model.ws[i] = w - self.learning_rate * self.model.grads[i]
         self.model.zero_grad()
         loss = cross_entropy_loss(Y_batch, logits)
         return loss
@@ -89,16 +93,16 @@ class SoftmaxTrainer(BaseTrainer):
 def main():
     # hyperparameters DO NOT CHANGE IF NOT SPECIFIED IN ASSIGNMENT TEXT
     num_epochs = 50
-    learning_rate = .1
+    learning_rate = .02
     batch_size = 32
     neurons_per_layer = [64, 10]
     momentum_gamma = .9  # Task 3 hyperparameter
     shuffle_data = True
 
     # Settings for task 2 and 3. Keep all to false for task 2.
-    use_improved_sigmoid = False
-    use_improved_weight_init = False
-    use_momentum = False
+    use_improved_sigmoid = True
+    use_improved_weight_init = True
+    use_momentum = True
     use_relu = False
 
     # Load dataset

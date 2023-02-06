@@ -49,9 +49,19 @@ def sigmoid(x: np.ndarray):
 def dsigmoid(x: np.ndarray):
     return sigmoid(x) * (1 - sigmoid(x))
 
+def improved_sigmoid(x: np.ndarray):
+    return 1.7159 * np.tanh((2/3) * x)
+
+def dimproved_sigmoid(x: np.ndarray):
+    return 1.7159 * (2 / (3 * np.cosh((2 / 3) * x) ** 2))
+
 def softmax(x: np.ndarray):
     exp = np.exp(x)
     return exp / np.sum(exp, axis=1, keepdims=True)
+
+def glorot(n_in: int, n_out: int):
+    return np.random.uniform(-1, 1, (n_in, n_out)) * np.sqrt(6/(n_in+n_out))
+
 
 
 class SoftmaxModel:
@@ -79,14 +89,19 @@ class SoftmaxModel:
         # Initialize the weights
         self.ws = []
         prev = self.I
+        
         for size in self.neurons_per_layer:
             w_shape = (prev, size)
-            print("Initializing weight to shape:", w_shape)
-            w = np.zeros(w_shape)
-            w = np.random.uniform(-1, 1, w_shape)
+            if self.use_improved_weight_init:
+                print("Glorot: Initializing weight to shape:", w_shape)
+                w = glorot(prev, size)
+            else:
+                print("Initializing weight to shape:", w_shape)
+                w = np.zeros(w_shape)
+                w = np.random.uniform(-1, 1, w_shape)
             self.ws.append(w)
             prev = size
-        self.grads = [None for i in range(len(self.ws))]
+            self.grads = [None for i in range(len(self.ws))]
 
     def forward(self, X: np.ndarray) -> np.ndarray:
         """
@@ -109,7 +124,10 @@ class SoftmaxModel:
                 X = softmax(X)
             else:
                 self.zs.append(X)
-                X = sigmoid(X)
+                if self.use_improved_sigmoid:
+                    X = improved_sigmoid(X)
+                else:
+                    X = sigmoid(X)
         return X
 
     def backward(self, X: np.ndarray, outputs: np.ndarray,
@@ -132,8 +150,17 @@ class SoftmaxModel:
         for i, w in reversed(list(enumerate(self.ws))):
             dw = np.einsum('ij,jk->ki', grad.T, self.inputs[i])/ X.shape[0]
             self.grads = [dw] + self.grads
-            if i == 1: # last layer
-                grad = np.einsum('ij,jk->ik', grad, w.T) * dsigmoid(self.zs[i - 1])
+            if i != 0: # last layer
+                grad = grad = grad.dot(w.T) * dimproved_sigmoid(self.zs[i-1]) 
+        # self.grads = []
+        # grad = - (targets - outputs)  #sol
+        # for i, w in reversed(list(enumerate(self.ws))):
+        #     #dW = delta.T.dot(self.inputs[i]) / X.shape[0]  #sol
+        #     dw = np.einsum('ij,jk->ki', grad.T, self.inputs[i])/ X.shape[0]
+        #     #dW = dW.T #sol
+        #     self.grads = [dw] + self.grads  #sol
+        #     if i != 0:  #sol
+        #         grad = dimproved_sigmoid(self.zs[i-1]) * grad.dot(w.T)  #sol
 
 
         for grad, w in zip(self.grads, self.ws):
