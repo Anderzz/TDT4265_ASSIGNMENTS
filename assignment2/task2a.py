@@ -62,6 +62,12 @@ def softmax(x: np.ndarray):
 def glorot(n_in: int, n_out: int):
     return np.random.uniform(-1, 1, (n_in, n_out)) * np.sqrt(6/(n_in+n_out))
 
+def relu(x: np.ndarray):
+    return np.maximum(0, x)
+
+def drelu(x: np.ndarray):
+    return np.where(x > 0, 1, 0)
+
 
 
 class SoftmaxModel:
@@ -89,6 +95,7 @@ class SoftmaxModel:
         # Initialize the weights
         self.ws = []
         prev = self.I
+        print(f"Activation function: {'relu' if use_relu else 'improved sigmoid'}")
         
         for size in self.neurons_per_layer:
             w_shape = (prev, size)
@@ -118,16 +125,16 @@ class SoftmaxModel:
         for i, w in enumerate(self.ws):
             w = self.ws[i]
             self.inputs.append(X)
-            #X = np.einsum('ij,jk->ik', X, w) # soo slow
+            #X = np.einsum('ij,jk->ik', X, w) # sooo slow
             X = np.dot(X, w)
             if len(self.ws) - 1 == i:
                 X = softmax(X)
             else:
                 self.zs.append(X)
-                if self.use_improved_sigmoid:
-                    X = improved_sigmoid(X)
+                if self.use_relu:
+                    X = relu(X)
                 else:
-                    X = sigmoid(X)
+                    X = improved_sigmoid(X)
         return X
 
     def backward(self, X: np.ndarray, outputs: np.ndarray,
@@ -151,7 +158,10 @@ class SoftmaxModel:
             dw = np.einsum('ij,jk->ki', grad.T, self.inputs[i])/ X.shape[0]
             self.grads = [dw] + self.grads
             if i != 0: # last layer
-                grad = grad = grad.dot(w.T) * dimproved_sigmoid(self.zs[i-1]) 
+                if self.use_relu:
+                    grad = grad.dot(w.T) * drelu(self.zs[i-1])
+                else:
+                    grad = grad.dot(w.T) * dimproved_sigmoid(self.zs[i-1]) 
         # self.grads = []
         # grad = - (targets - outputs)  #sol
         # for i, w in reversed(list(enumerate(self.ws))):
