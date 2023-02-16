@@ -130,7 +130,7 @@ def main():
 
     # Train a model with L2 regularization (task 4b)
 
-    model1 = SoftmaxModel(l2_reg_lambda=2.0)
+    model1 = SoftmaxModel(l2_reg_lambda=1.0)
     trainer = SoftmaxTrainer(
         model1, learning_rate, batch_size, shuffle_dataset,
         X_train, Y_train, X_val, Y_val,
@@ -175,7 +175,7 @@ def main():
 
     # 4c)
 
-    l2_lambdas = [2, .2, .02, .002]
+    l2_lambdas = [1, .1, .01, .001]
     plt.figure()
     for lam in l2_lambdas:
         model = SoftmaxModel(lam)
