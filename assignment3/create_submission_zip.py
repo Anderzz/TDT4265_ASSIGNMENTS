@@ -23,6 +23,8 @@ files_to_include = {
     "task2": [".py"],
     "task2_train": [".ipynb"],
     "trainer": [".py"],
+    "task3": [".py"],
+    "task4": [".py"],
     "utils": [".py"],
     "dataloaders": [".py"]
 }
