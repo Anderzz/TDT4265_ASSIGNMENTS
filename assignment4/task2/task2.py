@@ -16,11 +16,22 @@ def calculate_iou(prediction_box, gt_box):
             float: value of the intersection of union for the two boxes.
     """
     # YOUR CODE HERE
+    x1 = max(prediction_box[0], gt_box[0])
+    y1 = max(prediction_box[1], gt_box[1])
+    x2 = min(prediction_box[2], gt_box[2])
+    y2 = min(prediction_box[3], gt_box[3])
 
     # Compute intersection
+    intersection = max(0, x2 - x1) * max(0, y2 - y1)  
+
+    box1_area = (prediction_box[2] - prediction_box[0]) * (prediction_box[3] - prediction_box[1])
+    box2_area = (gt_box[2] - gt_box[0]) * (gt_box[3] - gt_box[1])
 
     # Compute union
-    iou = 0
+    union = box1_area + box2_area - intersection  
+
+    iou = intersection / union
+
     #END OF YOUR CODE
 
     assert iou >= 0 and iou <= 1
@@ -39,10 +50,7 @@ def calculate_precision(num_tp, num_fp, num_fn):
         float: value of precision
     """
     # YOUR CODE HERE
-
-    #END OF YOUR CODE
-
-    raise NotImplementedError
+    return num_tp / (num_tp + num_fp) if num_tp + num_fp != 0 else 1
 
 
 def calculate_recall(num_tp, num_fp, num_fn):
@@ -56,10 +64,7 @@ def calculate_recall(num_tp, num_fp, num_fn):
         float: value of recall
     """
     # YOUR CODE HERE
-
-    #END OF YOUR CODE
-
-    raise NotImplementedError
+    return num_tp / (num_tp + num_fn) if num_tp + num_fn != 0 else 0
 
 
 def get_all_box_matches(prediction_boxes, gt_boxes, iou_threshold):
@@ -83,19 +88,31 @@ def get_all_box_matches(prediction_boxes, gt_boxes, iou_threshold):
             Each row includes [xmin, ymin, xmax, ymax]
     """
     # YOUR CODE HERE
+    # Calculate IOU scores for all possible box matches
+    iou_scores = np.array([[calculate_iou(pred_box, gt_box) for gt_box in gt_boxes] for pred_box in prediction_boxes])
+    
+    # Find box matches with IOU score greater than or equal to the threshold
+    matching_indices = np.argwhere(iou_scores >= iou_threshold)
 
-    # Find all possible matches with a IoU >= iou threshold
-
-
-    # Sort all matches on IoU in descending order
-
-    # Find all matches with the highest IoU threshold
-
-
-
-    return np.array([]), np.array([])
-    #END OF YOUR CODE
-
+    # If there are no matches, return empty arrays
+    if matching_indices.size == 0:
+        return np.array([]), np.array([])
+    
+    # Sort by decreasing IOU score
+    sorted_indices = np.argsort(iou_scores[np.squeeze(matching_indices[:, 0]), np.squeeze(matching_indices[:, 1])])[::-1]
+    matching_indices = matching_indices[sorted_indices]
+    
+    pred_lookup = np.zeros(len(prediction_boxes), dtype=np.bool)
+    gt_lookup = np.zeros(len(gt_boxes), dtype=np.bool)
+    
+    # Add each box match to the final list if it hasn't already been added
+    final_prediction_boxes = prediction_boxes[matching_indices[:, 0][~pred_lookup[matching_indices[:, 0]]]]
+    final_gt_boxes = gt_boxes[matching_indices[:, 1][~gt_lookup[matching_indices[:, 1]]]]
+    
+    pred_lookup[matching_indices[:, 0]] = True
+    gt_lookup[matching_indices[:, 1]] = True
+            
+    return np.array(final_prediction_boxes), np.array(final_gt_boxes)
 
 
 def calculate_individual_image_result(prediction_boxes, gt_boxes, iou_threshold):
