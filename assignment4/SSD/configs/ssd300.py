@@ -14,7 +14,7 @@ train = dict(
     amp=True,  # Automatic mixed precision
     log_interval=20,
     seed=0,
-    epochs=5,
+    epochs=40,
     _output_dir=get_output_dir(),
     imshape=(300, 300),
     image_channels=3
@@ -35,7 +35,13 @@ anchors = L(AnchorBoxes)(
     scale_size_variance=0.2
 )
 
-backbone = L(backbones.BasicModel)(
+# backbone = L(backbones.BasicModel)(
+#     output_channels=[128, 256, 128, 128, 64, 64],
+#     image_channels="${train.image_channels}",
+#     output_feature_sizes="${anchors.feature_sizes}"
+# )
+
+backbone = L(backbones.BetterModel)(
     output_channels=[128, 256, 128, 128, 64, 64],
     image_channels="${train.image_channels}",
     output_feature_sizes="${anchors.feature_sizes}"
@@ -54,6 +60,11 @@ optimizer = L(torch.optim.SGD)(
     # Tip: Scale the learning rate by batch size! 5e-3 is set for a batch size of 32. use 2*5e-3 if you use 64
     lr=5e-3, momentum=0.9, weight_decay=0.0005
 )
+# optimizer = L(torch.optim.Adam)(
+#     lr = 4e-4,
+#     weight_decay = 0.0005
+# )
+
 schedulers = dict(
     linear=L(LinearLR)(start_factor=0.1, end_factor=1, total_iters=500),
     multistep=L(MultiStepLR)(milestones=[], gamma=0.1)
