@@ -148,7 +148,7 @@ class BetterModel(torch.nn.Module):
                 nn.Conv2d(512, 256, kernel_size=3, padding=1, stride=1),
                 nn.LeakyReLU(0.2),
                 nn.BatchNorm2d(256),
-                nn.Conv2d(128, output_channels[1], kernel_size=3, padding=1, stride=2),
+                nn.Conv2d(256, output_channels[1], kernel_size=3, padding=1, stride=2),
                 nn.LeakyReLU(0.2),
             ),
             nn.Sequential(
